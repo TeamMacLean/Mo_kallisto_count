@@ -30,15 +30,38 @@ configfile: "config.yaml"
 rule counts:
     input: 
         counts="results/all_samples_tpm_matrix.txt",
+        rawreadcount="results/read_counts.txt",
         metadata="results/run_metadata.txt"
 
 # Following rules removed:
-# count_reads_in_fq
+# count_reads_in_fq - ADDED AGAIN
 # extract_percent_per_taxid
-# count_raw_reads_in_fq
+# count_raw_reads_in_fq - ADDED AGAIN
 # run_kraken
 # extract_reads
 # count_extracted_reads_in_fq
+
+
+rule count_raw_reads_in_fq:
+    input:
+        fq1=lambda wildcards: sample_to_read(wildcards.sample, samples, fq1)
+    output:
+        count=config['scratch'] + "{sample}/read_count.txt"
+    threads: 1
+    params:
+        queue="tsl-short",
+        mem="16G"
+    shell: "zcat {input.fq1} | wc -l > {output.count}"
+
+rule count_reads_in_fq:
+    input:
+        raw=expand(config['scratch'] + "{sample}/read_count.txt", sample=samples)
+    threads: 1
+    params:
+        mem="16G",
+        queue="tsl-short"
+    output: "results/read_counts.txt"
+    shell: "bash scripts/readcountsummary.sh {input.raw} > {output}"
 
 rule kallisto_quant:
     input: 

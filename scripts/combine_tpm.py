@@ -2,9 +2,10 @@
 
 import sys
 from collections import defaultdict
+import os
 
 files = sys.argv[1:]
-samples = [f.split("/")[5] for f in files]
+samples = [os.path.basename(os.path.dirname(os.path.dirname(f))) for f in files]
 targets = defaultdict(list)
 
 
